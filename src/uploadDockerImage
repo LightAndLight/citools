@@ -1,0 +1,61 @@
+#! /usr/bin/env -S ipso --
+
+uploadDockerImage : { registryUri : String, nixDerivation : String } -> IO ()
+uploadDockerImage { registryUri, nixDerivation } =
+  comp
+    println "Building $nixDerivation..."
+    bind result <- io.map string.trim <| cmd.read `nix build --file "$nixDerivation" --no-link --print-out-paths`
+    
+    println "Loading Docker image from $result..."  
+    cmd.run `docker image load -i $result`
+
+    println "Tagging image..."
+    bind imageTag <- cmd.read `nix eval --impure --raw --expr "let drv = import $nixDerivation; in \"\${drv.imageName}:\${drv.imageTag}\""`
+    let fullImageTag = "$registryUri/$imageTag"
+    cmd.run `docker tag $imageTag $fullImageTag`
+    println "Tagged image $imageTag as $fullImageTag"
+  
+    println "Pushing image to $fullImageTag..."
+    cmd.run `docker push $fullImageTag`
+    println "Pushed image to $fullImageTag"
+    
+exitWithHelp : (| Some : String, None : () |) -> IO a
+exitWithHelp message =
+  comp
+    case message of
+      None () ->
+        io.pure ()
+      Some message ->
+        println "error: $message\n"
+    
+    bind program <- env.program
+    println "Usage: $program URI FILE\n"
+    println "Arguments:"
+    println "  URI   Docker registry URI"
+    println "  FILE  Nix derivation for a Docker image"
+    println ""
+    println "Options:"
+    println "  -h, --help  Print usage information"
+    exit.failure
+
+main : IO ()
+main =
+  comp
+    bind args <- env.args
+    
+    case array.filter (\arg -> arg == "-h" || arg == "--help") args of
+      [] -> io.pure ()
+      _ -> exitWithHelp (None ())
+    
+    bind args <- case args of
+      [registryUri, nixDerivation] ->
+        # https://github.com/LightAndLight/ipso/issues/320
+        # io.pure { registryUri, nixDerivation }
+        io.pure { registryUri = registryUri, nixDerivation = nixDerivation }
+      _ ->
+        exitWithHelp (Some "expected 2 arguments, got ${int.toString (array.length args)}")
+    
+    uploadDockerImage args
+
+
+
