@@ -16,6 +16,13 @@
           ];
         };
         
+        devShells.digitalOcean = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            doctl
+            s3cmd
+          ];
+        };
+        
         packages.uploadDockerImage =
           let binaryPath = "bin/uploadDockerImage"; in
           pkgs.stdenv.mkDerivation {
@@ -34,9 +41,42 @@
             inherit binaryPath;
           };
         
+        packages.uploadToCache =
+          let binaryPath = "bin/uploadToCache"; in
+          pkgs.stdenv.mkDerivation {
+            name = "citools-uploadToCache";
+            src = nix-filter {
+              root = ./.;
+              include = [ ./src/uploadToCache ];
+            };
+            buildInputs = [
+              ipsoPackage
+            ];
+            installPhase = ''
+              mkdir -p $out/bin
+              cp src/uploadToCache $out/${binaryPath}
+              chmod +x $out/${binaryPath}
+            '';
+            inherit binaryPath;
+          };
+          
+        packages.digitalOceanImage =
+          (pkgs.nixos {
+              imports = [
+                "${pkgs.path}/nixos/modules/virtualisation/digital-ocean-image.nix"
+              ];
+              
+              virtualisation.digitalOceanImage.compressionMethod = "bzip2";
+          }).digitalOceanImage;
+        
         apps.uploadDockerImage = {
           type = "app";
           program = let drv = self.packages.${system}.uploadDockerImage; in "${drv}/${drv.binaryPath}";
+        };
+        
+        apps.uploadToCache = {
+          type = "app";
+          program = let drv = self.packages.${system}.uploadToCache; in "${drv}/${drv.binaryPath}";
         };
       }
     );

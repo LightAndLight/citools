@@ -22,3 +22,10 @@ Arguments:
 * `URI` - Docker registry URI
 * `FILE` - A Nix file containing a
   [`dockerTools`](https://nixos.org/manual/nixpkgs/stable/#sec-pkgs-dockerTools) Docker image derivation
+  
+## VM Images
+
+* DigitalOcean - `nix build github:LightAndLight/citools#digitalOceanImage && ls result`
+
+  At the time of writing, DigitalOcean has no convenient way to automate the uploading of the built image.
+  Upload it manually at <https://cloud.digitalocean.com/images/custom_images>.

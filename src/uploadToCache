@@ -1,0 +1,14 @@
+#! /usr/bin/env ipso
+
+main : IO ()
+main =
+  comp
+    bind binaryCacheBucket <- env.getvar! "BINARY_CACHE_BUCKET"
+    bind binaryCacheEndpoint <- env.getvar! "BINARY_CACHE_ENDPOINT"
+    bind binaryCachePrivateKey <- env.getvar! "BINARY_CACHE_PRIVATE_KEY"
+    bind outPaths <- env.getvar! "OUT_PATHS"
+    
+	println "Uploading paths $outPaths"
+    
+	let binaryCacheUrl = "s3://${binaryCacheBucket}?scheme=https&endpoint=$binaryCacheEndpoint&secret-key=$binaryCachePrivateKey"
+    cmd.run `nix copy --to $binaryCacheUrl $..{string.partsc ' ' outPaths}`
