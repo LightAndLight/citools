@@ -8,7 +8,7 @@ main =
     bind binaryCachePrivateKey <- env.getvar! "BINARY_CACHE_PRIVATE_KEY"
     bind outPaths <- env.getvar! "OUT_PATHS"
     
-	println "Uploading paths $outPaths"
+    println "Uploading paths $outPaths"
     
-	let binaryCacheUrl = "s3://${binaryCacheBucket}?scheme=https&endpoint=$binaryCacheEndpoint&secret-key=$binaryCachePrivateKey"
+    let binaryCacheUrl = "s3://${binaryCacheBucket}?scheme=https&endpoint=$binaryCacheEndpoint&secret-key=$binaryCachePrivateKey"
     cmd.run `nix copy --to $binaryCacheUrl $..{string.partsc ' ' outPaths}`
