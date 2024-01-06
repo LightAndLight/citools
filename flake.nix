@@ -37,6 +37,7 @@
             installPhase = ''
               mkdir -p $out/bin
               cp src/uploadDockerImage $out/${binaryPath}
+              chmod +x $out/${binaryPath}
             '';
             inherit binaryPath;
           };
