@@ -6,7 +6,7 @@
   };
   outputs = { self, nixpkgs, flake-utils, nix-filter, ipso }:
     flake-utils.lib.eachDefaultSystem (system:
-      let 
+      let
         pkgs = import nixpkgs { inherit system; };
         ipsoPackage = ipso.defaultPackage.${system};
       in {
@@ -15,14 +15,14 @@
             ipsoPackage
           ];
         };
-        
+
         devShells.digitalOcean = pkgs.mkShell {
           buildInputs = with pkgs; [
             doctl
             s3cmd
           ];
         };
-        
+
         packages.uploadDockerImage =
           let binaryPath = "bin/uploadDockerImage"; in
           pkgs.stdenv.mkDerivation {
@@ -41,7 +41,7 @@
             '';
             inherit binaryPath;
           };
-        
+
         packages.uploadToCache =
           let binaryPath = "bin/uploadToCache"; in
           pkgs.stdenv.mkDerivation {
@@ -60,21 +60,28 @@
             '';
             inherit binaryPath;
           };
-          
+
         packages.digitalOceanImage =
           (pkgs.nixos {
-              imports = [
-                "${pkgs.path}/nixos/modules/virtualisation/digital-ocean-image.nix"
-              ];
-              
-              virtualisation.digitalOceanImage.compressionMethod = "bzip2";
+            imports = [
+              "${pkgs.path}/nixos/modules/virtualisation/digital-ocean-image.nix"
+            ];
+
+            virtualisation.digitalOceanImage.compressionMethod = "bzip2";
+
+            nix = {
+              package = pkgs.nixFlakes;
+              extraOptions = ''
+                experimental-features = nix-command flakes
+              '';
+            };
           }).digitalOceanImage;
-        
+
         apps.uploadDockerImage = {
           type = "app";
           program = let drv = self.packages.${system}.uploadDockerImage; in "${drv}/${drv.binaryPath}";
         };
-        
+
         apps.uploadToCache = {
           type = "app";
           program = let drv = self.packages.${system}.uploadToCache; in "${drv}/${drv.binaryPath}";

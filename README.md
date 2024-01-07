@@ -25,7 +25,7 @@ Arguments:
   
 ## VM Images
 
-* DigitalOcean - `nix build github:LightAndLight/citools#digitalOceanImage && ls result`
+* DigitalOcean - `nix build github:LightAndLight/citools#digitalOceanImage && ls result/`
 
   At the time of writing, DigitalOcean has no convenient way to automate the uploading of the built image.
   Upload it manually at <https://cloud.digitalocean.com/images/custom_images>.
