@@ -60,6 +60,23 @@
             '';
             inherit binaryPath;
           };
+        
+        packages.testPackage =
+          pkgs.stdenv.mkDerivation {
+            name = "citools-testPackage";
+            src = nix-filter {
+              root = ./.;
+              include = [ ./src/testScript ];
+            };
+            buildInputs = [
+              pkgs.bashInteractive
+            ];
+            installPhase = ''
+              mkdir -p $out/bin
+              cp src/testScript $out/bin/testScript
+              chmod +x $out/bin/testScript
+            '';
+          };
 
         packages.digitalOceanImage =
           (pkgs.nixos {
