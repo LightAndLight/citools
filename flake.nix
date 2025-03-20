@@ -78,22 +78,6 @@
             '';
           };
 
-        packages.digitalOceanImage =
-          (pkgs.nixos {
-            imports = [
-              "${pkgs.path}/nixos/modules/virtualisation/digital-ocean-image.nix"
-            ];
-
-            virtualisation.digitalOceanImage.compressionMethod = "bzip2";
-
-            nix = {
-              package = pkgs.nixFlakes;
-              extraOptions = ''
-                experimental-features = nix-command flakes
-              '';
-            };
-          }).digitalOceanImage;
-
         apps.uploadDockerImage = {
           type = "app";
           program = let drv = self.packages.${system}.uploadDockerImage; in "${drv}/${drv.binaryPath}";
